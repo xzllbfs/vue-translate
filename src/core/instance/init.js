@@ -13,6 +13,7 @@ import { extend, mergeOptions, formatComponentName } from '../util/index'
 let uid = 0
 
 export function initMixin (Vue: Class<Component>) {
+  // 给 Vue 实例增加 _init() 方法，合并 options / 初始化操作
   Vue.prototype._init = function (options?: Object) {
     const vm: Component = this
     // a uid
@@ -27,35 +28,50 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     // a flag to avoid this being observed
+    // 如果是Vue实例不需要被响应式化
     vm._isVue = true
-    // merge options
+
+    // merge options 合并options
     if (options && options._isComponent) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
       initInternalComponent(vm, options)
     } else {
+      // 将用户传入的 options 和 初始化的构造函数中的 options 合并
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},
         vm
       )
     }
+
     /* istanbul ignore else */
+    // 设置渲染阶段的代理对象
     if (process.env.NODE_ENV !== 'production') {
+      // 生产环境，判断有Proxy对象，通过 new Proxy代理vm，否则直接将vm赋值给_renderProxy
       initProxy(vm)
     } else {
       vm._renderProxy = vm
     }
+
     // expose real self
     vm._self = vm
+    // vm 的生命周期相关变量初始化
     initLifecycle(vm)
+    // vm 的事件监听初始化，父组件绑定在当前组件上的事件
     initEvents(vm)
+    // vm 的编译render初始化，h函数和其它属性（$slots/$scopedSlots/_c/$createElement/$attrs/$listeners）
     initRender(vm)
+    // 触发生命周期中的钩子函数 beforeCreate
     callHook(vm, 'beforeCreate')
+    // 把 inject 依赖 的成员注入到 vm._provided 上
     initInjections(vm) // resolve injections before data/props
+    // 初始化 vm 的 _props/methods/_data/computed/watch，并注入到vue实例中
     initState(vm)
+    // 初始化 provide 注入，查找vm._provided
     initProvide(vm) // resolve provide after data/props
+    // created 生命钩子的回调
     callHook(vm, 'created')
 
     /* istanbul ignore if */
@@ -65,6 +81,7 @@ export function initMixin (Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
 
+    // 调用 $mount() 挂载dom
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
     }

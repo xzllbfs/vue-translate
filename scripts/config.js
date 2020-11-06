@@ -25,16 +25,18 @@ const weexFactoryPlugin = {
   }
 }
 
+// 4. 路径处理
 const aliases = require('./alias')
 const resolve = p => {
   const base = p.split('/')[0]
-  if (aliases[base]) {
+  if (aliases[base]) { // 获取入口和出口文件的绝对路径
     return path.resolve(aliases[base], p.slice(base.length + 1))
   } else {
     return path.resolve(__dirname, '../', p)
   }
 }
 
+// 3. 环境变量对象，获取生成配置的信息
 const builds = {
   // Runtime only (CommonJS). Used by bundlers e.g. Webpack & Browserify
   'web-runtime-cjs-dev': {
@@ -119,14 +121,15 @@ const builds = {
     env: 'production',
     banner
   },
-  // Runtime+compiler development build (Browser)
   'web-full-dev': {
-    entry: resolve('web/entry-runtime-with-compiler.js'),
+    // 入口 ../src/platforms/web/entry-runtime-with-compiler.js
+    entry: resolve('web/entry-runtime-with-compiler.js'), // 入口
+    // 出口 ../dist/vue.js
     dest: resolve('dist/vue.js'),
-    format: 'umd',
-    env: 'development',
-    alias: { he: './entity-decoder' },
-    banner
+    format: 'umd', // 模块输出方式
+    env: 'development', // 打包环境
+    alias: { he: './entity-decoder' }, // 别名
+    banner // 输出文件的文件头
   },
   // Runtime+compiler production build  (Browser)
   'web-full-prod': {
@@ -213,7 +216,9 @@ const builds = {
   }
 }
 
+// 2. 生成配置
 function genConfig (name) {
+  // 环境变量对象，获取生成配置的信息
   const opts = builds[name]
   const config = {
     input: opts.entry,
@@ -260,10 +265,13 @@ function genConfig (name) {
     value: name
   })
 
+  // 返回rollup配置对象
   return config
 }
 
+// 1. 判断环境变量是否有环境变量
 if (process.env.TARGET) {
+  // 如果有，导出生成配置对象函数
   module.exports = genConfig(process.env.TARGET)
 } else {
   exports.getBuild = genConfig

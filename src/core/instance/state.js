@@ -48,11 +48,15 @@ export function proxy (target: Object, sourceKey: string, key: string) {
 export function initState (vm: Component) {
   vm._watchers = []
   const opts = vm.$options
+  // 将 opts.props 上的成员转换为响应式数据，注入到vue实例中
   if (opts.props) initProps(vm, opts.props)
+  // 将选项中的 methods 注入到vue实例中
   if (opts.methods) initMethods(vm, opts.methods)
   if (opts.data) {
+    // 将data中的属性注入到响应式中，做重名处理，并转换为响应式成员
     initData(vm)
   } else {
+    // data不存在，初始化为一个空的响应式的data对象
     observe(vm._data = {}, true /* asRootData */)
   }
   if (opts.computed) initComputed(vm, opts.computed)
@@ -72,6 +76,7 @@ function initProps (vm: Component, propsOptions: Object) {
   if (!isRoot) {
     toggleObserving(false)
   }
+  // 遍历选项中的props propsOptions = vm.$options.props
   for (const key in propsOptions) {
     keys.push(key)
     const value = validateProp(key, propsOptions, propsData, vm)
@@ -85,6 +90,7 @@ function initProps (vm: Component, propsOptions: Object) {
           vm
         )
       }
+      // 将所有属性注入到 vm._props中，并转换为响应式的
       defineReactive(props, key, value, () => {
         if (!isRoot && !isUpdatingChildComponent) {
           warn(
@@ -103,6 +109,8 @@ function initProps (vm: Component, propsOptions: Object) {
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
     if (!(key in vm)) {
+      // 如果属性不存在，注入到vue实例中
+      // this._props.xxx
       proxy(vm, `_props`, key)
     }
   }
@@ -111,6 +119,7 @@ function initProps (vm: Component, propsOptions: Object) {
 
 function initData (vm: Component) {
   let data = vm.$options.data
+  // 初始化 _data, 组件中 data 如果是函数调用函数返回结果，否则直接返回data
   data = vm._data = typeof data === 'function'
     ? getData(data, vm)
     : data || {}
@@ -123,10 +132,13 @@ function initData (vm: Component) {
     )
   }
   // proxy data on instance
+  // 获取data中所有属性
   const keys = Object.keys(data)
+  // 获取 props / methods
   const props = vm.$options.props
   const methods = vm.$options.methods
   let i = keys.length
+  // 判断 data 上的成员是否和 props/methods 重名
   while (i--) {
     const key = keys[i]
     if (process.env.NODE_ENV !== 'production') {
@@ -144,10 +156,12 @@ function initData (vm: Component) {
         vm
       )
     } else if (!isReserved(key)) {
+      // 将 当前key 注入到vue实例中
       proxy(vm, `_data`, key)
     }
   }
   // observe data
+  // 将 data 转换为响应式对象
   observe(data, true /* asRootData */)
 }
 
@@ -277,12 +291,14 @@ function initMethods (vm: Component, methods: Object) {
         )
       }
       if ((key in vm) && isReserved(key)) {
+        // vue 不建议方法名以 _ 或者 $ 开头
         warn(
           `Method "${key}" conflicts with an existing Vue instance method. ` +
           `Avoid defining component methods that start with _ or $.`
         )
       }
     }
+    // 传入的如果不是一个函数，则设置成 noop 空函数
     vm[key] = typeof methods[key] !== 'function' ? noop : bind(methods[key], vm)
   }
 }

@@ -7,6 +7,7 @@ import { defineReactive, toggleObserving } from '../observer/index'
 export function initProvide (vm: Component) {
   const provide = vm.$options.provide
   if (provide) {
+    // 4. 找到 provide 对象中的成员存储在 _provided 中
     vm._provided = typeof provide === 'function'
       ? provide.call(vm)
       : provide
@@ -14,9 +15,11 @@ export function initProvide (vm: Component) {
 }
 
 export function initInjections (vm: Component) {
+  // 1、 将inject对象中的 在vm对象中存在的 属性提取出来
   const result = resolveInject(vm.$options.inject, vm)
   if (result) {
     toggleObserving(false)
+    // 3. 遍历属性，注入到Vue实例中，设置成响应式的数据
     Object.keys(result).forEach(key => {
       /* istanbul ignore else */
       if (process.env.NODE_ENV !== 'production') {
@@ -51,10 +54,12 @@ export function resolveInject (inject: any, vm: Component): ?Object {
       const provideKey = inject[key].from
       let source = vm
       while (source) {
+        // 2. 如果inject里面的属性 在vm的_provided对象中，就将属性存储在result中
         if (source._provided && hasOwn(source._provided, provideKey)) {
           result[key] = source._provided[provideKey]
           break
         }
+        // 递归每一层，直到没有父组件停止循环
         source = source.$parent
       }
       if (!source) {

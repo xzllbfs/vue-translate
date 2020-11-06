@@ -12,9 +12,10 @@ import { updateListeners } from '../vdom/helpers/index'
 export function initEvents (vm: Component) {
   vm._events = Object.create(null)
   vm._hasHookEvent = false
-  // init parent attached events
+  // init parent attached events 获取父组件上附加的事件
   const listeners = vm.$options._parentListeners
   if (listeners) {
+    // 注册自定义事件，将父组件附加的事件，添加到当前组件
     updateComponentListeners(vm, listeners)
   }
 }
@@ -58,6 +59,7 @@ export function eventsMixin (Vue: Class<Component>) {
         vm.$on(event[i], fn)
       }
     } else {
+      // 获取当前事件，如果没有事件会初始化为一个空数组，并将当前事件添加到数组中
       (vm._events[event] || (vm._events[event] = [])).push(fn)
       // optimize hook:event cost by using a boolean flag marked at registration
       // instead of a hash lookup

@@ -10,13 +10,17 @@ export function initUse (Vue: GlobalAPI) {
     }
 
     // additional parameters
+    // 将plugin删除后，剩余参数就是传入的其它参数
+    // 把数组中的第一个元素(plugin)去除
     const args = toArray(arguments, 1)
+    // 把this(Vue)插入第一个元素的位置，方便后面apply方法使用
     args.unshift(this)
     if (typeof plugin.install === 'function') {
       plugin.install.apply(plugin, args)
     } else if (typeof plugin === 'function') {
       plugin.apply(null, args)
     }
+    // 保存已安装的插件
     installedPlugins.push(plugin)
     return this
   }

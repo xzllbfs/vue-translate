@@ -15,13 +15,17 @@ const idToTemplate = cached(id => {
 })
 
 const mount = Vue.prototype.$mount
+// 将设置的DOM挂载到页面上
 Vue.prototype.$mount = function (
   el?: string | Element,
+  // 开启ssr时 为 true
   hydrating?: boolean
 ): Component {
+  // 获取Dom对象：元素选择器对应的DOM元素
   el = el && query(el)
 
   /* istanbul ignore if */
+  // 1. 开发环境中，DOM对象不能是body或者html
   if (el === document.body || el === document.documentElement) {
     process.env.NODE_ENV !== 'production' && warn(
       `Do not mount Vue to <html> or <body> - mount to normal elements instead.`
@@ -31,6 +35,7 @@ Vue.prototype.$mount = function (
 
   const options = this.$options
   // resolve template/el and convert to render function
+  // 2. 把 template/el 编译成render函数
   if (!options.render) {
     let template = options.template
     if (template) {
@@ -79,6 +84,8 @@ Vue.prototype.$mount = function (
       }
     }
   }
+
+  // 3. 挂载DOM
   return mount.call(this, el, hydrating)
 }
 
@@ -96,6 +103,7 @@ function getOuterHTML (el: Element): string {
   }
 }
 
+// 将html字符串编译成render函数，传递一个 HTML 字符串返回 render 函数
 Vue.compile = compileToFunctions
 
 export default Vue

@@ -23,6 +23,7 @@ let uid = 0
  * and fires callback when the expression value changes.
  * This is used for both the $watch() api and directives.
  */
+// 在 vue 中， Watcher有3种：DOM渲染/计算属性/侦听器
 export default class Watcher {
   vm: Component;
   expression: string;
@@ -42,6 +43,14 @@ export default class Watcher {
   getter: Function;
   value: any;
 
+  /**
+   * 监听器
+   * @param {*} vm vue实例
+   * @param {*} expOrFn 渲染监听 updateComponent
+   * @param {*} cb 
+   * @param {*} options beforeUpdate
+   * @param {*} isRenderWatcher 是否为渲染监听器
+   */
   constructor (
     vm: Component,
     expOrFn: string | Function,
@@ -58,6 +67,7 @@ export default class Watcher {
     if (options) {
       this.deep = !!options.deep
       this.user = !!options.user
+      // 延迟执行 如果没有传入值，为false
       this.lazy = !!options.lazy
       this.sync = !!options.sync
       this.before = options.before
@@ -77,6 +87,7 @@ export default class Watcher {
       : ''
     // parse expression for getter
     if (typeof expOrFn === 'function') {
+      // 首次渲染，传入 updateComponent 函数
       this.getter = expOrFn
     } else {
       this.getter = parsePath(expOrFn)
@@ -97,12 +108,16 @@ export default class Watcher {
 
   /**
    * Evaluate the getter, and re-collect dependencies.
+   * 
    */
   get () {
+    // 将当前的 Watcher 对象传入栈中
+    // 渲染嵌套组件的时候，先渲染子组件，所以父组件的Watcher需要保存起来
     pushTarget(this)
     let value
     const vm = this.vm
     try {
+      // 调用 updateComponent，改变 this 指向为 vue 实例
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {

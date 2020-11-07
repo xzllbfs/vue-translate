@@ -41,6 +41,7 @@ Vue.prototype.$mount = function (
     if (template) {
       if (typeof template === 'string') {
         if (template.charAt(0) === '#') {
+          // el.innerHTML
           template = idToTemplate(template)
           /* istanbul ignore if */
           if (process.env.NODE_ENV !== 'production' && !template) {
@@ -67,6 +68,7 @@ Vue.prototype.$mount = function (
         mark('compile')
       }
 
+      // 把 template 转换成 render 函数
       const { render, staticRenderFns } = compileToFunctions(template, {
         outputSourceRange: process.env.NODE_ENV !== 'production',
         shouldDecodeNewlines,
@@ -75,6 +77,7 @@ Vue.prototype.$mount = function (
         comments: options.comments
       }, this)
       options.render = render
+      // 渲染优化函数
       options.staticRenderFns = staticRenderFns
 
       /* istanbul ignore if */
@@ -94,9 +97,11 @@ Vue.prototype.$mount = function (
  * of SVG elements in IE as well.
  */
 function getOuterHTML (el: Element): string {
+  // 判断当前元素是否为DOM元素，有 outerHTML 属性
   if (el.outerHTML) {
     return el.outerHTML
   } else {
+    // 没有，手动创建
     const container = document.createElement('div')
     container.appendChild(el.cloneNode(true))
     return container.innerHTML

@@ -39,6 +39,7 @@ Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
 ): Component {
+  // 只包含运行时版本要重新获取 el
   el = el && inBrowser ? query(el) : undefined
   // 渲染DOM
   return mountComponent(this, el, hydrating)

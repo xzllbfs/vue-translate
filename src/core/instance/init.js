@@ -28,7 +28,7 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     // a flag to avoid this being observed
-    // 如果是Vue实例不需要被响应式化
+    // 1. Vue 实例标记，如果是 Vue 实例不需要 observed 被响应式化
     vm._isVue = true
 
     // merge options 合并options
@@ -38,7 +38,7 @@ export function initMixin (Vue: Class<Component>) {
       // internal component options needs special treatment.
       initInternalComponent(vm, options)
     } else {
-      // 将用户传入的 options 和 初始化的构造函数中的 options 合并
+      // 2. 将用户传入的 options 和 初始化的构造函数中的 options 合并
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},
@@ -47,9 +47,9 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     /* istanbul ignore else */
-    // 设置渲染阶段的代理对象
+    // 3. 设置渲染阶段的代理对象
     if (process.env.NODE_ENV !== 'production') {
-      // 生产环境，判断有Proxy对象，通过 new Proxy代理vm，否则直接将vm赋值给_renderProxy
+      // 生产环境，判断有Proxy对象，通过 new Proxy代理vm，否则直接将 vm 赋值给_renderProxy
       initProxy(vm)
     } else {
       vm._renderProxy = vm
@@ -81,7 +81,7 @@ export function initMixin (Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
 
-    // 调用 $mount() 挂载dom
+    // 开始渲染：调用 $mount() 挂载 dom
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
     }

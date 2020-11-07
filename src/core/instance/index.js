@@ -15,15 +15,15 @@ function Vue (options) {
   this._init(options)
 }
 
-// 注册 vm 的 _init() 方法，初始化vm
+// 1. Vue.prototype 上添加 _init() 方法，初始化vm
 initMixin(Vue)
-// 注册 vm 的 $data/$props/$set/$delete/$watch
+// 2. Vue.prototype 上添加 $data/$props/$set/$delete/$watch
 stateMixin(Vue)
-// 初始化事件($on/$once/$forceUpdate/$destroy)及相关方法
+// 3. Vue.prototype 上添加 $on/$once/$off/$emit 及相关方法
 eventsMixin(Vue)
-// 初始化生命周期相关的混入方法，_update/$forceUpdate/$destroy
+// 4. 初始化生命周期相关的混入方法，_update/$forceUpdate/$destroy
 lifecycleMixin(Vue)
-// 混入 render，$nextTick/_render
+// 5. 混入 render相关函数/$nextTick/_render
 renderMixin(Vue)
 
 export default Vue

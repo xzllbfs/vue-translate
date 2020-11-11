@@ -10,10 +10,15 @@ export let isUsingMicroTask = false
 const callbacks = []
 let pending = false
 
+// 刷新回调函数
 function flushCallbacks () {
+  // 标记处理结束
   pending = false
+  // 备份回调函数数组
   const copies = callbacks.slice(0)
+  // 清空原数组
   callbacks.length = 0
+  // 循环调用拷贝的回调函数
   for (let i = 0; i < copies.length; i++) {
     copies[i]()
   }
@@ -48,14 +53,17 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
     // microtask queue but the queue isn't being flushed, until the browser
     // needs to do some other work, e.g. handle a timer. Therefore we can
     // "force" the microtask queue to be flushed by adding an empty timer.
+    // UIWebView IOS的一个控件版本大于9.3.3的时候，自动降级为setTimeout
     if (isIOS) setTimeout(noop)
   }
+  // 微任务标记
   isUsingMicroTask = true
 } else if (!isIE && typeof MutationObserver !== 'undefined' && (
   isNative(MutationObserver) ||
   // PhantomJS and iOS 7.x
   MutationObserver.toString() === '[object MutationObserverConstructor]'
 )) {
+  // 不是IE浏览器，并且支持MutationObserver，兼容 PhantomJS, iOS7, Android 4.4 等环境
   // Use MutationObserver where native Promise is not available,
   // e.g. PhantomJS, iOS7, Android 4.4
   // (#6466 MutationObserver is unreliable in IE11)
@@ -71,6 +79,7 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
   }
   isUsingMicroTask = true
 } else if (typeof setImmediate !== 'undefined' && isNative(setImmediate)) {
+  // setImmediate只有IE浏览器和NodeJS支持，性能比setTimeout好
   // Fallback to setImmediate.
   // Technically it leverages the (macro) task queue,
   // but it is still a better choice than setTimeout.
@@ -84,11 +93,17 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
   }
 }
 
+/**
+ * @param {*} cb 回调函数
+ * @param {*} ctx 上下文：vue实例
+ */
 export function nextTick (cb?: Function, ctx?: Object) {
   let _resolve
+  // 把 cb 加上异常处理存入 callbacks 数组中
   callbacks.push(() => {
     if (cb) {
       try {
+        // 调用 cb()
         cb.call(ctx)
       } catch (e) {
         handleError(e, ctx, 'nextTick')
@@ -99,10 +114,12 @@ export function nextTick (cb?: Function, ctx?: Object) {
   })
   if (!pending) {
     pending = true
+    // 判断队列是都正在被处理，遍历数组，找到所有函数并调用
     timerFunc()
   }
   // $flow-disable-line
   if (!cb && typeof Promise !== 'undefined') {
+    // 返回Promise对象
     return new Promise(resolve => {
       _resolve = resolve
     })

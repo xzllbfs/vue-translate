@@ -17,6 +17,7 @@ export function isReserved (str: string): boolean {
 
 /**
  * Define a property.
+ * @param enumerable 为了遍历这个属性的时候，记录getter和setter
  */
 export function def (obj: Object, key: string, val: any, enumerable?: boolean) {
   Object.defineProperty(obj, key, {

@@ -59,7 +59,9 @@ export function initState (vm: Component) {
     // data不存在，初始化为一个空的响应式的data对象
     observe(vm._data = {}, true /* asRootData */)
   }
+  // 计算属性初始化，创建 计算属性watcher
   if (opts.computed) initComputed(vm, opts.computed)
+  // 用户自定义watcher初始化，创建 用户watcher
   if (opts.watch && opts.watch !== nativeWatch) {
     initWatch(vm, opts.watch)
   }
@@ -161,7 +163,7 @@ function initData (vm: Component) {
     }
   }
   // observe data
-  // 将 data 转换为响应式对象
+  // 将 data 转换为响应式对象，响应式处理入口
   observe(data, true /* asRootData */)
 }
 
@@ -198,6 +200,7 @@ function initComputed (vm: Component, computed: Object) {
 
     if (!isSSR) {
       // create internal watcher for the computed property.
+      // 创建 watcher,此处lazy=true，为了在watcher中不用调用get方法，computedWatcherOptions: { lazy: true }
       watchers[key] = new Watcher(
         vm,
         getter || noop,
@@ -304,8 +307,10 @@ function initMethods (vm: Component, methods: Object) {
 }
 
 function initWatch (vm: Component, watch: Object) {
+  // 遍历用户传入的wathcer对象
   for (const key in watch) {
     const handler = watch[key]
+    // 判断监听的属性是对象还是数组
     if (Array.isArray(handler)) {
       for (let i = 0; i < handler.length; i++) {
         createWatcher(vm, key, handler[i])
@@ -322,13 +327,17 @@ function createWatcher (
   handler: any,
   options?: Object
 ) {
+  // 判断属性值是对象还是 function
+  // 如果是对象，会将选项设置上，并且取出对象的回调函数
   if (isPlainObject(handler)) {
     options = handler
     handler = handler.handler
   }
+  // 如果传入的是字符串，会去寻找methods中定义的字符串同名方法
   if (typeof handler === 'string') {
     handler = vm[handler]
   }
+  // 调用$watch方法
   return vm.$watch(expOrFn, handler, options)
 }
 
@@ -363,20 +372,28 @@ export function stateMixin (Vue: Class<Component>) {
     cb: any,
     options?: Object
   ): Function {
+    // 获取 Vue 实例 this，watch不能作为静态方法的原因是因为用到了实例本身
     const vm: Component = this
+    // 判断如果传入的是原始对象，对对象重新解析
     if (isPlainObject(cb)) {
       return createWatcher(vm, expOrFn, cb, options)
     }
+    // 初始化配置
     options = options || {}
+    // 标记为用户 watcher，作用是在watcher触发之前做try catch处理
     options.user = true
+    // 创建 watcher 对象
     const watcher = new Watcher(vm, expOrFn, cb, options)
+    // 如果 options.immediate = true
     if (options.immediate) {
       try {
+        // 立即执行一次回调，并且把当前值传入
         cb.call(vm, watcher.value)
       } catch (error) {
         handleError(error, vm, `callback for immediate watcher "${watcher.expression}"`)
       }
     }
+    // 返回取消监听的方法
     return function unwatchFn () {
       watcher.teardown()
     }

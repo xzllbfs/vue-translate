@@ -23,7 +23,7 @@ let uid = 0
  * and fires callback when the expression value changes.
  * This is used for both the $watch() api and directives.
  */
-// 在 vue 中， Watcher有3种：DOM渲染/计算属性/侦听器
+// 在 vue 中， Watcher有3种：渲染 Watcher/计算属性 Computed Watcher/侦听器（用户 Watcher)
 export default class Watcher {
   vm: Component;
   expression: string;
@@ -47,7 +47,7 @@ export default class Watcher {
    * 监听器
    * @param {*} vm vue实例
    * @param {*} expOrFn 渲染监听 updateComponent
-   * @param {*} cb 
+   * @param {*} cb 回调函数，对比新旧值
    * @param {*} options beforeUpdate
    * @param {*} isRenderWatcher 是否为渲染监听器
    */
@@ -67,7 +67,7 @@ export default class Watcher {
     if (options) {
       this.deep = !!options.deep
       this.user = !!options.user
-      // 延迟执行 如果没有传入值，为false
+      // 延迟执行 如果没有传入值，为false，计算属性lazy为true
       this.lazy = !!options.lazy
       this.sync = !!options.sync
       this.before = options.before
@@ -75,9 +75,11 @@ export default class Watcher {
       this.deep = this.user = this.lazy = this.sync = false
     }
     this.cb = cb
+    // 批处理 vue 实例标记
     this.id = ++uid // uid for batching
     this.active = true
     this.dirty = this.lazy // for lazy watchers
+    // 记录依赖对象
     this.deps = []
     this.newDeps = []
     this.depIds = new Set()
@@ -90,6 +92,8 @@ export default class Watcher {
       // 首次渲染，传入 updateComponent 函数
       this.getter = expOrFn
     } else {
+      // expOrFn 是字符串的时候，例如 watch: { 'person.name': function... }
+      // parsePath('person.name') 返回一个函数获取 person.name 的值
       this.getter = parsePath(expOrFn)
       if (!this.getter) {
         this.getter = noop
@@ -101,6 +105,7 @@ export default class Watcher {
         )
       }
     }
+    // 计算属性lazy = true，不对value求值，因为value在渲染watcher中求值
     this.value = this.lazy
       ? undefined
       : this.get()
@@ -117,10 +122,13 @@ export default class Watcher {
     let value
     const vm = this.vm
     try {
-      // 调用 updateComponent，改变 this 指向为 vue 实例
+      // 渲染Watcher：调用 updateComponent，改变 this 指向为 vue 实例
+      // 用户watcher，获取属性的方法
       value = this.getter.call(vm, vm)
     } catch (e) {
+      // 获取属性出现的异常
       if (this.user) {
+        // 对于用户watcher的异常处理
         handleError(e, vm, `getter for watcher "${this.expression}"`)
       } else {
         throw e
@@ -139,6 +147,7 @@ export default class Watcher {
 
   /**
    * Add a dependency to this directive.
+   * 收集依赖
    */
   addDep (dep: Dep) {
     const id = dep.id
@@ -183,6 +192,7 @@ export default class Watcher {
     } else if (this.sync) {
       this.run()
     } else {
+      // 如果是渲染 Watcher，会将当前 Watcher 放入到队列中
       queueWatcher(this)
     }
   }
@@ -192,8 +202,11 @@ export default class Watcher {
    * Will be called by the scheduler.
    */
   run () {
+    // 是否存活
     if (this.active) {
+      // 对于渲染 Watcher 而言，value为undefined
       const value = this.get()
+      // 如果是其它类型watcher
       if (
         value !== this.value ||
         // Deep watchers and watchers on Object/Arrays should fire even
@@ -205,6 +218,7 @@ export default class Watcher {
         // set new value
         const oldValue = this.value
         this.value = value
+        // 如果是用户watcher，调用新旧值对比的回调函数，并进行异常处理
         if (this.user) {
           try {
             this.cb.call(this.vm, value, oldValue)

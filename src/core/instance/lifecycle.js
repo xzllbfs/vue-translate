@@ -204,6 +204,7 @@ export function mountComponent (
   new Watcher(vm, updateComponent, noop, {
     before () {
       if (vm._isMounted && !vm._isDestroyed) {
+        // 触发 beforeUpdate 生命周期钩子函数
         callHook(vm, 'beforeUpdate')
       }
     }

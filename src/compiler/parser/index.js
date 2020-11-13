@@ -62,6 +62,7 @@ export function createASTElement (
   attrs: Array<ASTAttr>,
   parent: ASTElement | void
 ): ASTElement {
+  // AST对象
   return {
     type: 1,
     tag,
@@ -80,6 +81,7 @@ export function parse (
   template: string,
   options: CompilerOptions
 ): ASTElement | void {
+  // 1. 解析options
   warn = options.warn || baseWarn
 
   platformIsPreTag = options.isPreTag || no
@@ -201,6 +203,8 @@ export function parse (
     }
   }
 
+  // 2. 解析HTML模板
+  // start开始标签/end结束标签/chars文本内容/comment注释，解析过程中的回调函数，用于生成AST
   parseHTML(template, {
     warn,
     expectHTML: options.expectHTML,
@@ -221,6 +225,7 @@ export function parse (
         attrs = guardIESVGBug(attrs)
       }
 
+      // 创建AST对象
       let element: ASTElement = createASTElement(tag, attrs, currentParent)
       if (ns) {
         element.ns = ns
@@ -265,6 +270,7 @@ export function parse (
       }
 
       if (!inVPre) {
+        // 处理指令 v-pre
         processPre(element)
         if (element.pre) {
           inVPre = true
@@ -277,6 +283,7 @@ export function parse (
         processRawAttrs(element)
       } else if (!element.processed) {
         // structural directives
+        // 处理结构化指令 v-for v-if v-once
         processFor(element)
         processIf(element)
         processOnce(element)
@@ -289,6 +296,7 @@ export function parse (
         }
       }
 
+      // unary 自闭合并标签
       if (!unary) {
         currentParent = element
         stack.push(element)
@@ -396,6 +404,7 @@ export function parse (
       }
     }
   })
+  // 返回解析好的html对象
   return root
 }
 
@@ -530,6 +539,7 @@ export function parseFor (exp: string): ?ForParseResult {
 function processIf (el) {
   const exp = getAndRemoveAttr(el, 'v-if')
   if (exp) {
+    // 挂载表达式
     el.if = exp
     addIfCondition(el, {
       exp: exp,

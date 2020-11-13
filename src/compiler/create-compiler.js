@@ -5,11 +5,13 @@ import { detectErrors } from './error-detector'
 import { createCompileToFunctionFn } from './to-function'
 
 export function createCompilerCreator (baseCompile: Function): Function {
+  // baseOptions 平台相关的选项参数，在src\platforms\web\compiler\options.js中定义
   return function createCompiler (baseOptions: CompilerOptions) {
     function compile (
       template: string,
       options?: CompilerOptions
     ): CompiledResult {
+      // 合并用户传入和平台相关的选项参数
       const finalOptions = Object.create(baseOptions)
       const errors = []
       const tips = []
@@ -58,18 +60,20 @@ export function createCompilerCreator (baseCompile: Function): Function {
 
       finalOptions.warn = warn
 
+      // {render, staticRenderFns}
       const compiled = baseCompile(template.trim(), finalOptions)
       if (process.env.NODE_ENV !== 'production') {
         detectErrors(compiled.ast, warn)
       }
       compiled.errors = errors
       compiled.tips = tips
+      // 返回编译好的对象
       return compiled
     }
 
     return {
       compile,
-      compileToFunctions: createCompileToFunctionFn(compile)
+      compileToFunctions: createCompileToFunctionFn(compile) // 编译入口
     }
   }
 }

@@ -248,6 +248,7 @@ export function parseHTML (html, options) {
     }
 
     if (options.start) {
+      // unary 自闭合并标签
       options.start(tagName, attrs, unary, match.start, match.end)
     }
   }

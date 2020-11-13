@@ -102,11 +102,12 @@ export function _createElement (
     data.scopedSlots = { default: children[0] }
     children.length = 0
   }
-  // 判断传入的render类型，将children转换为一维数组
+  // 判断传入的render类型，将children转换为一维数组 ALWAYS_NORMALIZE = 2
   if (normalizationType === ALWAYS_NORMALIZE) {
     // 返回一维数组，处理用户手写的render
     children = normalizeChildren(children)
   } else if (normalizationType === SIMPLE_NORMALIZE) {
+    // SIMPLE_NORMALIZE = 1
     // 包含函数式组件时，二维数组转一维数组
     children = simpleNormalizeChildren(children)
   }

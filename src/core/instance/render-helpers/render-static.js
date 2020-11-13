@@ -7,6 +7,7 @@ export function renderStatic (
   index: number,
   isInFor: boolean
 ): VNode | Array<VNode> {
+  // 从缓存中获取静态根节点对应的代码
   const cached = this._staticTrees || (this._staticTrees = [])
   let tree = cached[index]
   // if has already-rendered static tree and not inside v-for,
@@ -37,6 +38,7 @@ export function markOnce (
   return tree
 }
 
+// 将节点标记为静态的
 function markStatic (
   tree: VNode | Array<VNode>,
   key: string,

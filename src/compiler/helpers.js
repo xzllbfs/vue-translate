@@ -185,6 +185,7 @@ export function getAndRemoveAttr (
   name: string,
   removeFromMap?: boolean
 ): ?string {
+  // 从树形地图中获取值
   let val
   if ((val = el.attrsMap[name]) != null) {
     const list = el.attrsList
@@ -195,9 +196,11 @@ export function getAndRemoveAttr (
       }
     }
   }
+  // 获取之后移除地图上的属性
   if (removeFromMap) {
     delete el.attrsMap[name]
   }
+  // 返回这个获取到的值
   return val
 }
 

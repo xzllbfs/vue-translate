@@ -57,6 +57,8 @@ export function initLifecycle (vm: Component) {
 }
 
 export function lifecycleMixin (Vue: Class<Component>) {
+  // _update方法的作用是把VNode渲染成真实的 DOM
+  // 首次渲染和数据更新时都会调用
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
     const prevEl = vm.$el
@@ -65,11 +67,12 @@ export function lifecycleMixin (Vue: Class<Component>) {
     vm._vnode = vnode
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
+    // prevVnode 是之前处理过的 vnode对象
     if (!prevVnode) {
-      // initial render 首次渲染
+      // initial render 首次渲染，将 vm.$el 真实 DOM 转换为虚拟 DOM，和新的vnode做比较，最后将差异更新到$el上
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
-      // updates
+      // updates 数据更新后，直接获取新老节点对比结果
       vm.$el = vm.__patch__(prevVnode, vnode)
     }
     restoreActiveInstance()

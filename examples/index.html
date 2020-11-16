@@ -7,9 +7,9 @@
 </head>
 <body>
   <div id="app">
-    {{ reversedMessage }}
-    <hr>
-    {{ user.fullName }}
+    <h1>Vue<span>模板编译过程</span></h1>
+    <div>{{ msg }}<p>hello</p></div>
+    <div>是否显示</div>
   </div>
 
   <script src="../dist/vue.js"></script>
@@ -17,32 +17,7 @@
     const vm = new Vue({
       el: '#app',
       data: {
-        message: 'Hello Vue',
-        user: {
-          firstName: '诸葛',
-          lastName: '亮',
-          fullName: ''
-        }
-      },
-      computed: {
-        reversedMessage: function () {
-          return this.message.split('').reverse().join('')
-        }
-      },
-      watch: {
-        // 'user.firstName': function (newValue, oldValue) {
-        //   this.user.fullName = this.user.firstName + ' ' + this.user.lastName
-        // },
-        // 'user.lastName': function (newValue, oldValue) {
-        //   this.user.fullName = this.user.firstName + ' ' + this.user.lastName
-        // },
-        'user': {
-          handler: function (newValue, oldValue) {
-            this.user.fullName = this.user.firstName + ' ' + this.user.lastName
-          },
-          deep: true,
-          immediate: true
-        }
+        msg: 'Hello Vue'
       }
     })
   </script>

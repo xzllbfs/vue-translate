@@ -33,6 +33,7 @@ import {
 } from 'weex/runtime/recycle-list/render-component-template'
 
 // inline hooks to be invoked on component VNodes during patch
+// 定义组件的钩子函数
 const componentVNodeHooks = {
   init (vnode: VNodeWithData, hydrating: boolean): ?boolean {
     if (
@@ -44,10 +45,13 @@ const componentVNodeHooks = {
       const mountedNode: any = vnode // work around flow
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
+      // 创建组件实例
+      // activeInstance 激活的实例，当前组件的父组件对象
       const child = vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
         activeInstance
       )
+      // 创建组件对象后，创建组件的真实DOM，但不挂载到DOM树
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
   },
@@ -98,6 +102,14 @@ const componentVNodeHooks = {
 
 const hooksToMerge = Object.keys(componentVNodeHooks)
 
+/**
+ * 创建组件
+ * @param {*} Ctor 组件类构造函数 | 函数 | 对象
+ * @param {*} data 组件需要的数据
+ * @param {*} context 上下文：当前组件实例 || vue实例
+ * @param {*} children 子节点
+ * @param {*} tag 标签名称
+ */
 export function createComponent (
   Ctor: Class<Component> | Function | Object | void,
   data: ?VNodeData,
@@ -109,9 +121,11 @@ export function createComponent (
     return
   }
 
+  // vue构造函数
   const baseCtor = context.$options._base
 
   // plain options object: turn it into a constructor
+  // 如果 Ctor 不是一个构造函数，是一个对象，使用 Vue.extend() 创造一个子组件的构造函数
   if (isObject(Ctor)) {
     Ctor = baseCtor.extend(Ctor)
   }
@@ -126,6 +140,7 @@ export function createComponent (
   }
 
   // async component
+  // 异步组件
   let asyncFactory
   if (isUndef(Ctor.cid)) {
     asyncFactory = Ctor
@@ -148,9 +163,11 @@ export function createComponent (
 
   // resolve constructor options in case global mixins are applied after
   // component constructor creation
+  // 当前组件构造函数创建完毕后，合并当前组件选项 和 通过 Vue.minxin 混入的选项
   resolveConstructorOptions(Ctor)
 
   // transform component v-model data into props & events
+  // 处理 v-model 指令
   if (isDef(data.model)) {
     transformModel(Ctor.options, data)
   }
@@ -183,10 +200,13 @@ export function createComponent (
   }
 
   // install component management hooks onto the placeholder node
+  // 注册组件的钩子函数 init/prepatch/insert/destroy
+  // init内部通过 new vnode.componentOptions.Ctor(options) 创建组件对象
   installComponentHooks(data)
 
   // return a placeholder vnode
   const name = Ctor.options.name || tag
+  // 获取组件的名称，创建组件对应的VNode对象
   const vnode = new VNode(
     `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`,
     data, undefined, undefined, undefined, context,
@@ -208,7 +228,7 @@ export function createComponent (
 export function createComponentInstanceForVnode (
   // we know it's MountedComponentVNode but flow doesn't
   vnode: any,
-  // activeInstance in lifecycle state
+  // activeInstance in lifecycle state 当前组件的父组件对象 vue实例
   parent: any
 ): Component {
   const options: InternalComponentOptions = {
@@ -217,26 +237,33 @@ export function createComponentInstanceForVnode (
     parent
   }
   // check inline-template render functions
+  // 获取 inline-template <comp inline-template> xxxx </comp>
   const inlineTemplate = vnode.data.inlineTemplate
   if (isDef(inlineTemplate)) {
     options.render = inlineTemplate.render
     options.staticRenderFns = inlineTemplate.staticRenderFns
   }
+  // 创建组件实例
   return new vnode.componentOptions.Ctor(options)
 }
 
 function installComponentHooks (data: VNodeData) {
   const hooks = data.hook || (data.hook = {})
+  // 把用户传入的自定义钩子函数和 componentVNodeHooks 中预定义的钩子函数合并
   for (let i = 0; i < hooksToMerge.length; i++) {
     const key = hooksToMerge[i]
+    // 用户传入的钩子函数
     const existing = hooks[key]
+    // 默认的钩子函数
     const toMerge = componentVNodeHooks[key]
     if (existing !== toMerge && !(existing && existing._merged)) {
+      // mergeHook 合并钩子函数
       hooks[key] = existing ? mergeHook(toMerge, existing) : toMerge
     }
   }
 }
 
+// 合并钩子函数
 function mergeHook (f1: any, f2: any): Function {
   const merged = (a, b) => {
     // flow complains about extra args which is why we use any

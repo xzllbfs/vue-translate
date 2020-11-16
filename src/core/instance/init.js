@@ -82,6 +82,7 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     // 开始渲染：调用 $mount() 挂载 dom
+    // 子组件渲染的时候选项中没有el选项，所以mount不会执行
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
     }

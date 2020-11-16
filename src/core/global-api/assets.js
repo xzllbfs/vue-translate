@@ -21,7 +21,7 @@ export function initAssetRegisters (Vue: GlobalAPI) {
         if (process.env.NODE_ENV !== 'production' && type === 'component') {
           validateComponentName(id)
         }
-        // 判断当前类型是否为组件且为原始的对象
+        // 判断当前类型是否为组件且为对象
         if (type === 'component' && isPlainObject(definition)) {
           definition.name = definition.name || id
           // 把组件配置转换为组件的构造函数，options._base = Vue
@@ -30,7 +30,8 @@ export function initAssetRegisters (Vue: GlobalAPI) {
         if (type === 'directive' && typeof definition === 'function') {
           definition = { bind: definition, update: definition }
         }
-        // 全局注册，存储资源并赋值 this.option['components']['my-component'] = definition
+        // 全局注册，如果是函数，将函数存储并赋值
+        // this.option['components']['my-component'] = definition
         this.options[type + 's'][id] = definition
         return definition
       }
